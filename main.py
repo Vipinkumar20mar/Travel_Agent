@@ -72,9 +72,10 @@ Flight Results:
 Create Hotel itinerary.
 Hotel Results:
 {state['hotel_results']}
+ Also use previous conversation memory if available
 
 """
-    response=llm.invoke([
+    response=llm.invoke( state["messages"]+[
 
        SystemMessage(
             content="You are an expert travel planner"
@@ -103,9 +104,10 @@ def final_agent(state: TravelState):
 
     Itinerary:
     {state['itinerary']}
+    Also use previous conversation memory if available
     """
 
-    response = llm.invoke([
+    response = llm.invoke( state["messages"]+[
         HumanMessage(content=final_prompt)
     ])
 
