@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+from psycopg.rows import dict_row
 from langchain_groq import ChatGroq
 import psycopg
 from langchain_core.messages import HumanMessage,BaseMessage,AIMessage,SystemMessage
@@ -123,15 +124,39 @@ graph.add_edge("hotel_agent", "Itinerary_agent")
 graph.add_edge("Itinerary_agent", "final_agent")
 graph.add_edge("final_agent", END)
 
-# Persistent connection so both CLI and Streamlit can share the compiled app
-_conn = psycopg.connect(DATABASE_URL, autocommit=True)
-checkpointer = PostgresSaver(_conn)
-checkpointer.setup()
 
 
+# =========================================================
+# CREATE CHECKPOINTER
+# =========================================================
+
+@st.cache_resource
+def create_checkpointer():
+
+    conn = psycopg.connect(
+        DATABASE_URL,
+        autocommit=True,
+        row_factory=dict_row
+    )
+
+    checkpointer = PostgresSaver(conn)
+
+    # create postgres tables
+    checkpointer.setup()
+
+    return checkpointer
 
 
-app=graph.compile(checkpointer=checkpointer)
+# =========================================================
+# CREATE APP
+# =========================================================
+
+checkpointer = create_checkpointer()
+
+app = graph.compile(
+    checkpointer=checkpointer
+)
+
 
 if __name__ == "__main__":
     config = {
