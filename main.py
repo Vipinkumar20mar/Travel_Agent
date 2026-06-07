@@ -1,4 +1,7 @@
 import os
+
+import streamlit as st
+
 from dotenv import load_dotenv
 from psycopg.rows import dict_row
 from langchain_groq import ChatGroq
